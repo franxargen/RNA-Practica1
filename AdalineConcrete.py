@@ -63,7 +63,7 @@ def calculateMeanCuadraticError(obtainedWeights, dataSet):
     expectedOutput = getExpectedOutput(dataSet)
     result = 0
     for i in range(len(dataSet)):
-        obtainedOutput = calculateOutput(dataSet[i, :8], obtainedWeights)
+        obtainedOutput = calculateOutput(dataSet[i, :9], obtainedWeights)
         result += (obtainedOutput - expectedOutput[i]) ** 2
     result = result / len(dataSet)
     return result
@@ -84,16 +84,16 @@ def calculateOutput(input, wheights):
     
     
 
-def run(input, weights = [] ,maxCycles = 10 ,learningRate = 0.05):
+def run(input, weights = [] ,maxCycles = 1 ,learningRate = 0.05):
     
     # Inicialización de pesos aleatorios y umbral
     if len(weights) == 0:
-        weights = np.random.rand(8)
-    print("Initial Weights : ", weights)
+        weights = np.random.rand(input.shape[1])
+    print("Initial Weights : \n", weights)
 
 
-    # Anadimos una fila mas con unos para poder multiplicar el umbral
-    input = np.insert(input, input.shape[0], [1,1,1,1,1,1,1,1,1], axis = 0)
+    # Anadimos una columna mas con 1's para poder multiplicar el umbral
+    input = np.insert(input, input.shape[1] - 1, np.ones(len(input)), axis = 1)
     print("Initial Inputs : \n", input)
     
     # Bucle de ciclos
@@ -103,22 +103,23 @@ def run(input, weights = [] ,maxCycles = 10 ,learningRate = 0.05):
         for inputLine in input:
             # TODO : Presentar entrada y calcular salida (1)
             obtainedOutput = calculateOutput(inputLine[:-1],weights)
-            #print("Obtained output in data line ", inputLine, " \n =", obtainedOutput)
             
             # TODO : Ajustar pesos y umbral (2)
             # TODO : inputLine solo llega hasta la penultima columna, necesitamos el ultimo valor
             expectedOutput = inputLine[-1]
-            print("Expected output in data line ", inputLine, " \n =", expectedOutput)
+            #print("Expected output in data line ", inputLine, " \n =", expectedOutput)
             
             deltaValue = learningRate * (obtainedOutput - expectedOutput)
             deltaWeights = deltaValue * inputLine[:-1]
+            #print("Delta weights are: \n", deltaWeights)
             weights = np.add(weights, deltaWeights)
             print("New weights are : \n", weights)
-            
+        
+        # TODO: Hay que normalizar los conjuntos de validacion y test
         trainingError = calculateMeanCuadraticError(weights, training)
-        print("Training Error = ", trainingError)
+        #print("Training Error = ", trainingError)
         validationError = calculateMeanCuadraticError(weights, validation)
-        print("Validation Error = ", validationError)
+        #print("Validation Error = ", validationError)
 
     return weights
 
