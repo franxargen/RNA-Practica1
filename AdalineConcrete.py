@@ -1,6 +1,7 @@
 import csv
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Funcion de normalizacion. Se le pasa una columna de datos y los normaliza        
 def normalize(list):
@@ -64,7 +65,7 @@ def calculateMeanCuadraticError(obtainedWeights, dataSet):
     result = 0
     for i in range(len(dataSet)):
         obtainedOutput = calculateOutput(dataSet[i, :9], obtainedWeights)
-        result += (obtainedOutput - expectedOutput[i]) ** 2
+        result += (expectedOutput[i] - obtainedOutput) ** 2
     result = result / len(dataSet)
     return result
 
@@ -81,10 +82,8 @@ def calculateOutput(input, wheights):
     resultArray = np.multiply(input,wheights)
     resultValue = np.sum(resultArray)
     return resultValue
-    
-    
 
-def run(input, weights = [] ,maxCycles = 1 ,learningRate = 0.05):
+def run(input, trainingErrorData = [], validationErrorData = [], weights = [] ,maxCycles = 100 ,learningRate = 0.05):
     
     # Inicialización de pesos aleatorios y umbral
     if len(weights) == 0:
@@ -109,22 +108,35 @@ def run(input, weights = [] ,maxCycles = 1 ,learningRate = 0.05):
             expectedOutput = inputLine[-1]
             #print("Expected output in data line ", inputLine, " \n =", expectedOutput)
             
-            deltaValue = learningRate * (obtainedOutput - expectedOutput)
+            deltaValue = learningRate * (expectedOutput - obtainedOutput)
             deltaWeights = deltaValue * inputLine[:-1]
             #print("Delta weights are: \n", deltaWeights)
             weights = np.add(weights, deltaWeights)
             print("New weights are : \n", weights)
         
         # TODO: Hay que normalizar los conjuntos de validacion y test
-        trainingError = calculateMeanCuadraticError(weights, training)
-        #print("Training Error = ", trainingError)
-        validationError = calculateMeanCuadraticError(weights, validation)
-        #print("Validation Error = ", validationError)
+        trainingErrorData.append(calculateMeanCuadraticError(weights, training))
+        validationErrorData.append(calculateMeanCuadraticError(weights, validation))
 
     return weights
 
-finalWeightsModel = run(training)
+trainingErrorData = []
+validationErrorData = []
+finalWeightsModel = run(training, trainingErrorData, validationErrorData)
 print("Final weights are : \n", finalWeightsModel)
+
+print("Training error " , trainingErrorData)
+print("validation error " , validationErrorData)
+
+plt.plot(trainingErrorData)
+plt.plot(validationErrorData)
+plt.xlabel('Cycles')
+plt.ylabel('Mean Square Error')
+plt.show()
+
 
 testingError = calculateMeanCuadraticError(finalWeightsModel, testing)
 print("Testing error = ", testingError)
+
+# Primer test -> Testing error = 0.022398470256393136, Pesos = [ 0.6612759   0.45535497  0.20710325 -0.25853091  0.10830692  0.05012424
+# 0.10667135  0.57011749 -0.01533123]
