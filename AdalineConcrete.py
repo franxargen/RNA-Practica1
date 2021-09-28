@@ -38,7 +38,7 @@ with open("ConcreteData.csv", "r") as dataFile:
     dataArray = np.asarray(dataArray)
 
     # Aleatorizacion
-    #random.shuffle(dataArray)
+    random.shuffle(dataArray)
 
 """ writeDataInFile("ObtainedData.csv",dataArray) """
 ''' Normalizacion y sobreescritura de los elementos de la lista de datos '''
@@ -83,21 +83,24 @@ def calculateOutput(input, wheights):
     resultValue = np.sum(resultArray)
     return resultValue
 
-def run(input, trainingErrorData = [], validationErrorData = [], weights = [] ,maxCycles = 100 ,learningRate = 0.05):
+def run(input, trainingErrorData = [], validationErrorData = [], weights = [] ,maxCycles = 500 ,learningRate = 0.05):
+
     
     # Inicialización de pesos aleatorios y umbral
     if len(weights) == 0:
         weights = np.random.rand(input.shape[1])
-    print("Initial Weights : \n", weights)
+    #print("Initial Weights : \n", weights)
 
 
     # Anadimos una columna mas con 1's para poder multiplicar el umbral
     input = np.insert(input, input.shape[1] - 1, np.ones(len(input)), axis = 1)
-    print("Initial Inputs : \n", input)
+    #print("Initial Inputs : \n", input)
     
     # Bucle de ciclos
     for cycle in range(maxCycles):
         
+        print("CYCLE = ", cycle)
+
         # Bucle de patrones. Recorremos hasta la penultima columna
         for inputLine in input:
             # TODO : Presentar entrada y calcular salida (1)
@@ -112,7 +115,7 @@ def run(input, trainingErrorData = [], validationErrorData = [], weights = [] ,m
             deltaWeights = deltaValue * inputLine[:-1]
             #print("Delta weights are: \n", deltaWeights)
             weights = np.add(weights, deltaWeights)
-            print("New weights are : \n", weights)
+            #print("New weights are : \n", weights)
         
         # TODO: Hay que normalizar los conjuntos de validacion y test
         trainingErrorData.append(calculateMeanCuadraticError(weights, training))
@@ -128,8 +131,8 @@ print("Final weights are : \n", finalWeightsModel)
 print("Training error " , trainingErrorData)
 print("validation error " , validationErrorData)
 
-plt.plot(trainingErrorData)
-plt.plot(validationErrorData)
+plt.plot(trainingErrorData, color='red')
+plt.plot(validationErrorData, color='blue')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
 plt.show()
