@@ -38,7 +38,7 @@ with open("ConcreteData.csv", "r") as dataFile:
     dataArray = np.asarray(dataArray)
 
     # Aleatorizacion
-    random.shuffle(dataArray)
+    # random.shuffle(dataArray)
 
 """ writeDataInFile("ObtainedData.csv",dataArray) """
 ''' Normalizacion y sobreescritura de los elementos de la lista de datos '''
@@ -55,10 +55,10 @@ training = dataArray[:int(len(dataArray)*0.7)]
 validation = dataArray[int(len(dataArray)*0.7):int(len(dataArray)*0.85)]
 testing = dataArray[int(len(dataArray)*0.85):]
 
-""" writeDataInFile("training",training)
+writeDataInFile("training",training)
 writeDataInFile("validation",validation)
 writeDataInFile("testing",testing)
-writeDataInFile("NormalizedData.csv",dataArray) """
+writeDataInFile("NormalizedData.csv",dataArray)
 
 def calculateMeanCuadraticError(obtainedWeights, dataSet):
     expectedOutput = getExpectedOutput(dataSet)
@@ -83,12 +83,14 @@ def calculateOutput(input, wheights):
     resultValue = np.sum(resultArray)
     return resultValue
 
-def run(input, trainingErrorData = [], validationErrorData = [], weights = [] ,maxCycles = 500 ,learningRate = 0.05):
+def run(input, weights = [] ,maxCycles = 1000 ,learningRate = 0.0005):
 
-    
+    trainingErrorData = []
+    validationErrorData = []
+
     # Inicialización de pesos aleatorios y umbral
     if len(weights) == 0:
-        weights = np.random.rand(input.shape[1])
+        weights = np.random.rand(input.shape[1]) - 0.5
     #print("Initial Weights : \n", weights)
 
 
@@ -96,6 +98,7 @@ def run(input, trainingErrorData = [], validationErrorData = [], weights = [] ,m
     input = np.insert(input, input.shape[1] - 1, np.ones(len(input)), axis = 1)
     #print("Initial Inputs : \n", input)
     
+
     # Bucle de ciclos
     for cycle in range(maxCycles):
         
@@ -121,11 +124,10 @@ def run(input, trainingErrorData = [], validationErrorData = [], weights = [] ,m
         trainingErrorData.append(calculateMeanCuadraticError(weights, training))
         validationErrorData.append(calculateMeanCuadraticError(weights, validation))
 
-    return weights
+    return weights, trainingErrorData, validationErrorData
 
-trainingErrorData = []
-validationErrorData = []
-finalWeightsModel = run(training, trainingErrorData, validationErrorData)
+
+finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 print("Final weights are : \n", finalWeightsModel)
 
 print("Training error " , trainingErrorData)
