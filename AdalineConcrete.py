@@ -3,14 +3,15 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Funcion de normalizacion. Se le pasa una columna de datos y los normaliza        
+# Funcion de normalizacion. Se le pasa una columna de datos y los normaliza
+'''      
 def normalize(list):
     maxValue = max(list)
     minValue = min(list)
     for i in range(len(list)):
         list[i] = (list[i]-minValue)/(maxValue-minValue)
     return list
-
+'''
 # Funcion de escritura en archivo
 def writeDataInFile(fileName, data):
     '''
@@ -26,23 +27,27 @@ def writeDataInFile(fileName, data):
 
 
 #Array de entradas
-dataArray = []
+def openAndProcessData():
+    dataArray = []
 
+    with open("ConcreteData.csv", "r") as dataFile:
+        csvData = csv.reader(dataFile, quoting=csv.QUOTE_NONNUMERIC)
+        # Obtencion de los datos del archivo
+        for line in csvData:
+            dataArray.append(line)
+        
+    dataArray = np.array(dataArray)
 
-with open("ConcreteData.csv", "r") as dataFile:
-    csvData = csv.reader(dataFile, quoting=csv.QUOTE_NONNUMERIC)
-
-    # Obtencion de los datos del archivo
-    for line in csvData:
-        dataArray.append(line)
-    
-    dataArray = np.asarray(dataArray)
-
+    dataArray = (dataArray - dataArray.min(0)) / dataArray.ptp(0)
     # Aleatorizacion
-    # random.shuffle(dataArray)
 
-dataArray = (dataArray - dataArray.min(0)) / dataArray.ptp(0)
-print(dataArray)
+    random.shuffle(dataArray)
+    # Anadimos una columna mas con 1's para poder multiplicar el umbral
+    dataArray = np.insert(dataArray, dataArray.shape[1] - 1, np.ones(len(dataArray)), axis = 1)
+    print(dataArray)
+    return dataArray
+
+dataArray = openAndProcessData()
 ''' Normalizacion y sobreescritura de los elementos de la lista de datos '''
 '''
 # Iteramos sobre las columnas de los datos
@@ -68,39 +73,33 @@ writeDataInFile("NormalizedData.csv",dataArray)
 def calculateMeanCuadraticError(obtainedWeights, dataSet):
     expectedOutput = getExpectedOutput(dataSet)
     result = 0
+    numColumns = dataSet.shape[1]
     for i in range(len(dataSet)):
-        obtainedOutput = calculateOutput(dataSet[i, :9], obtainedWeights)
+        obtainedOutput = calculateOutput(dataSet[i, :(numColumns - 1)], obtainedWeights)
         result += (expectedOutput[i] - obtainedOutput) ** 2
     result = result / len(dataSet)
     return result
 
 def getExpectedOutput(data):
     # TODO: Probar -1 en vez de 8
-    output = [fila[-1] for fila in data]
-    return np.asarray(output)
-
-def getExpectedOutputValue(data):
-    output = data[-1]
-    return output
+    output = data[:,-1]
+    return np.array(output)
 
 def calculateOutput(input, wheights):
     resultArray = np.multiply(input,wheights)
     resultValue = np.sum(resultArray)
     return resultValue
 
-def run(input, weights = [] ,maxCycles = 500 ,learningRate = 0.05):
+def run(input, weights = [] ,maxCycles = 500 ,learningRate = 0.1):
 
     trainingErrorData = []
     validationErrorData = []
 
     # Inicialización de pesos aleatorios y umbral
     if len(weights) == 0:
-        weights = np.random.rand(input.shape[1]) - 0.5
+        weights = np.random.rand(input.shape[1] - 1) - 0.5
     #print("Initial Weights : \n", weights)
 
-
-    # Anadimos una columna mas con 1's para poder multiplicar el umbral
-    input = np.insert(input, input.shape[1] - 1, np.ones(len(input)), axis = 1)
     #print("Initial Inputs : \n", input)
     
 
@@ -115,7 +114,6 @@ def run(input, weights = [] ,maxCycles = 500 ,learningRate = 0.05):
             obtainedOutput = calculateOutput(inputLine[:-1],weights)
             
             # TODO : Ajustar pesos y umbral (2)
-            # TODO : inputLine solo llega hasta la penultima columna, necesitamos el ultimo valor
             expectedOutput = inputLine[-1]
             #print("Expected output in data line ", inputLine, " \n =", expectedOutput)
             
@@ -135,14 +133,15 @@ def run(input, weights = [] ,maxCycles = 500 ,learningRate = 0.05):
 finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 #print("Final weights are : \n", finalWeightsModel)
 
-#print("Training error " , trainingErrorData)
-#print("validation error " , validationErrorData)
+print("Training error " , trainingErrorData)
+print("Validation error " , validationErrorData)
 
 plt.plot(trainingErrorData, color='red')
 plt.plot(validationErrorData, color='blue')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
 #plt.ylim(0.015,0.03)
+plt.ylim(min(min(trainingErrorData), min(validationErrorData)), max(max(trainingErrorData), max(validationErrorData)))
 plt.show()
 
 
