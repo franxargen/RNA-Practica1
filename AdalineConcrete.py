@@ -28,6 +28,7 @@ def writeDataInFile(fileName, data):
 #Array de entradas
 dataArray = []
 
+
 with open("ConcreteData.csv", "r") as dataFile:
     csvData = csv.reader(dataFile, quoting=csv.QUOTE_NONNUMERIC)
 
@@ -40,17 +41,21 @@ with open("ConcreteData.csv", "r") as dataFile:
     # Aleatorizacion
     # random.shuffle(dataArray)
 
-""" writeDataInFile("ObtainedData.csv",dataArray) """
+dataArray = (dataArray - dataArray.min(0)) / dataArray.ptp(0)
+print(dataArray)
 ''' Normalizacion y sobreescritura de los elementos de la lista de datos '''
+'''
 # Iteramos sobre las columnas de los datos
 for col in range(dataArray.shape[1]):
     # Guardamos cada una de las columnas normalizadas
-    colNomarlized = normalize(dataArray[:,col])  
+    colNomarlized = normalize(dataArray[:,col])
     
     # Sobreescribimos los nuevos datos
     for line in range(len(dataArray)):
         dataArray[line][col] = colNomarlized[line]
 print(dataArray)
+'''
+
 training = dataArray[:int(len(dataArray)*0.7)]
 validation = dataArray[int(len(dataArray)*0.7):int(len(dataArray)*0.85)]
 testing = dataArray[int(len(dataArray)*0.85):]
@@ -71,7 +76,7 @@ def calculateMeanCuadraticError(obtainedWeights, dataSet):
 
 def getExpectedOutput(data):
     # TODO: Probar -1 en vez de 8
-    output = [fila[8] for fila in data]
+    output = [fila[-1] for fila in data]
     return np.asarray(output)
 
 def getExpectedOutputValue(data):
@@ -83,7 +88,7 @@ def calculateOutput(input, wheights):
     resultValue = np.sum(resultArray)
     return resultValue
 
-def run(input, weights = [] ,maxCycles = 1000 ,learningRate = 0.0005):
+def run(input, weights = [] ,maxCycles = 500 ,learningRate = 0.05):
 
     trainingErrorData = []
     validationErrorData = []
@@ -102,7 +107,7 @@ def run(input, weights = [] ,maxCycles = 1000 ,learningRate = 0.0005):
     # Bucle de ciclos
     for cycle in range(maxCycles):
         
-        print("CYCLE = ", cycle)
+        #print("CYCLE = ", cycle)
 
         # Bucle de patrones. Recorremos hasta la penultima columna
         for inputLine in input:
@@ -128,15 +133,16 @@ def run(input, weights = [] ,maxCycles = 1000 ,learningRate = 0.0005):
 
 
 finalWeightsModel, trainingErrorData, validationErrorData = run(training)
-print("Final weights are : \n", finalWeightsModel)
+#print("Final weights are : \n", finalWeightsModel)
 
-print("Training error " , trainingErrorData)
-print("validation error " , validationErrorData)
+#print("Training error " , trainingErrorData)
+#print("validation error " , validationErrorData)
 
 plt.plot(trainingErrorData, color='red')
 plt.plot(validationErrorData, color='blue')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
+#plt.ylim(0.015,0.03)
 plt.show()
 
 
