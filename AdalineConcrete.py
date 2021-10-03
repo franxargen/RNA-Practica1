@@ -3,74 +3,66 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Funcion de normalizacion. Se le pasa una columna de datos y los normaliza
-'''      
-def normalize(list):
-    maxValue = max(list)
-    minValue = min(list)
-    for i in range(len(list)):
-        list[i] = (list[i]-minValue)/(maxValue-minValue)
-    return list
-'''
-# Funcion de escritura en archivo
+# Writes our data in a specific file
+# fileName : The string name of the file
+# data : The data we want to write
 def writeDataInFile(fileName, data):
-    '''
-    with open(fileName, "w") as file:
-        for line in data:
-            file.write(str(line).strip("[").strip("]"))
-    '''
+
     with open(fileName, 'w') as file:
         for line in data:
             writer = csv.writer(file)
             writer.writerow(line)
     file.close()
 
-
-#Array de entradas
-def openAndProcessData():
-    dataArray = []
-
-    with open("ConcreteData.csv", "r") as dataFile:
+# Gets data from file and saves it in a numpy array
+# fileName : The string name of the file we want to get the data of
+def getData(fileName):
+    data = []
+    with open(fileName, "r") as dataFile:
         csvData = csv.reader(dataFile, quoting=csv.QUOTE_NONNUMERIC)
-        # Obtencion de los datos del archivo
+        print("Getting data from", fileName, "...")
         for line in csvData:
-            dataArray.append(line)
-        
-    dataArray = np.array(dataArray)
+            if len(line) != 0:
+                data.append(line)
+        dataFile.close()
+    dataArray_np = np.asarray(data)
+    return dataArray_np
 
-    dataArray = (dataArray - dataArray.min(0)) / dataArray.ptp(0)
-    # Aleatorizacion
+# Obtains data from file and applies randomation and normalization. Also, it adds a column of full 1's at the end
+# fileName : The string name of the file we want to process
+def processData(fileName):
 
+    dataArray = getData(fileName)
+
+    print("Processing data...")
+    # Normalize
+    dataArray_np = (dataArray - dataArray.min(0)) / dataArray.ptp(0)
+
+    # Randomize
     random.shuffle(dataArray)
-    # Anadimos una columna mas con 1's para poder multiplicar el umbral
-    dataArray = np.insert(dataArray, dataArray.shape[1] - 1, np.ones(len(dataArray)), axis = 1)
-    print(dataArray)
-    return dataArray
 
-dataArray = openAndProcessData()
-''' Normalizacion y sobreescritura de los elementos de la lista de datos '''
-'''
-# Iteramos sobre las columnas de los datos
-for col in range(dataArray.shape[1]):
-    # Guardamos cada una de las columnas normalizadas
-    colNomarlized = normalize(dataArray[:,col])
-    
-    # Sobreescribimos los nuevos datos
-    for line in range(len(dataArray)):
-        dataArray[line][col] = colNomarlized[line]
-print(dataArray)
-'''
+    # Column of full 1's
+    dataArray_np = np.insert(dataArray_np, dataArray_np.shape[1] - 1, np.ones(len(dataArray_np)), axis=1)
+    return dataArray_np
 
-training = dataArray[:int(len(dataArray)*0.7)]
-validation = dataArray[int(len(dataArray)*0.7):int(len(dataArray)*0.85)]
-testing = dataArray[int(len(dataArray)*0.85):]
+'''These two lines process the data. They are commented because we want to proccess the data once'''
+#dataArray = processData("ConcreteData.csv")
+#writeDataInFile("processedData.csv", dataArray)
 
-writeDataInFile("training",training)
-writeDataInFile("validation",validation)
-writeDataInFile("testing",testing)
-writeDataInFile("NormalizedData.csv",dataArray)
+processedData = getData("processedData.csv")
 
-def calculateMeanCuadraticError(obtainedWeights, dataSet):
+# Split of the data
+training = processedData[:int(len(processedData)*0.7)]
+validation = processedData[int(len(processedData)*0.7):int(len(processedData)*0.85)]
+testing = processedData[int(len(processedData)*0.85):]
+
+# We write them on file to check
+writeDataInFile("training", training)
+writeDataInFile("validation", validation)
+writeDataInFile("testing", testing)
+
+# Calculates the mean 
+def calculateMeanSquareError(obtainedWeights, dataSet):
     expectedOutput = getExpectedOutput(dataSet)
     result = 0
     numColumns = dataSet.shape[1]
@@ -81,51 +73,44 @@ def calculateMeanCuadraticError(obtainedWeights, dataSet):
     return result
 
 def getExpectedOutput(data):
-    # TODO: Probar -1 en vez de 8
-    output = data[:,-1]
-    return np.array(output)
+    return np.array(data[:, -1])
 
 def calculateOutput(input, wheights):
-    resultArray = np.multiply(input,wheights)
-    resultValue = np.sum(resultArray)
-    return resultValue
+    resultArray = np.multiply(input, wheights)
+    return np.sum(resultArray)
 
-def run(input, weights = [] ,maxCycles = 500 ,learningRate = 0.1):
+def run(input, weights=[], maxCycles=1000, learningRate=0.0005):
 
     trainingErrorData = []
     validationErrorData = []
 
-    # Inicialización de pesos aleatorios y umbral
+    # Initialization of randow weights and umbral
     if len(weights) == 0:
         weights = np.random.rand(input.shape[1] - 1) - 0.5
+
+    '''Uncomment to check initial values'''    
     #print("Initial Weights : \n", weights)
-
     #print("Initial Inputs : \n", input)
-    
 
-    # Bucle de ciclos
+    # Cycles loop
     for cycle in range(maxCycles):
-        
-        #print("CYCLE = ", cycle)
 
-        # Bucle de patrones. Recorremos hasta la penultima columna
+        print("CYCLE =>", cycle)
+
+        # Data lines loop
         for inputLine in input:
-            # TODO : Presentar entrada y calcular salida (1)
-            obtainedOutput = calculateOutput(inputLine[:-1],weights)
-            
-            # TODO : Ajustar pesos y umbral (2)
+            # We calculate the output using the weights
+            obtainedOutput = calculateOutput(inputLine[:-1], weights)
+
+            # We adjust the new weights
             expectedOutput = inputLine[-1]
-            #print("Expected output in data line ", inputLine, " \n =", expectedOutput)
-            
             deltaValue = learningRate * (expectedOutput - obtainedOutput)
             deltaWeights = deltaValue * inputLine[:-1]
-            #print("Delta weights are: \n", deltaWeights)
             weights = np.add(weights, deltaWeights)
-            #print("New weights are : \n", weights)
-        
-        # TODO: Hay que normalizar los conjuntos de validacion y test
-        trainingErrorData.append(calculateMeanCuadraticError(weights, training))
-        validationErrorData.append(calculateMeanCuadraticError(weights, validation))
+
+        # And finally, calculate training and validation errors
+        trainingErrorData.append(calculateMeanSquareError(weights, training))
+        validationErrorData.append(calculateMeanSquareError(weights, validation))
 
     return weights, trainingErrorData, validationErrorData
 
@@ -133,20 +118,18 @@ def run(input, weights = [] ,maxCycles = 500 ,learningRate = 0.1):
 finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 #print("Final weights are : \n", finalWeightsModel)
 
-print("Training error " , trainingErrorData)
-print("Validation error " , validationErrorData)
+print("Training error ", trainingErrorData)
+print("Validation error ", validationErrorData)
 
+# Plot settings
 plt.plot(trainingErrorData, color='red')
 plt.plot(validationErrorData, color='blue')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
-#plt.ylim(0.015,0.03)
-plt.ylim(min(min(trainingErrorData), min(validationErrorData)), max(max(trainingErrorData), max(validationErrorData)))
+plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
+        max(max(trainingErrorData), max(validationErrorData)))
 plt.show()
 
-
-testingError = calculateMeanCuadraticError(finalWeightsModel, testing)
+# Final testing error
+testingError = calculateMeanSquareError(finalWeightsModel, testing)
 print("Testing error = ", testingError)
-
-# Primer test -> Testing error = 0.022398470256393136, Pesos = [ 0.6612759   0.45535497  0.20710325 -0.25853091  0.10830692  0.05012424
-# 0.10667135  0.57011749 -0.01533123]

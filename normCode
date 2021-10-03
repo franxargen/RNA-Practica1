@@ -1,0 +1,22 @@
+''' Normalizacion y sobreescritura de los elementos de la lista de datos '''
+'''
+# Iteramos sobre las columnas de los datos
+for col in range(dataArray.shape[1]):
+    # Guardamos cada una de las columnas normalizadas
+    colNomarlized = normalize(dataArray[:,col])
+    
+    # Sobreescribimos los nuevos datos
+    for line in range(len(dataArray)):
+        dataArray[line][col] = colNomarlized[line]
+print(dataArray)
+'''
+
+# Funcion de normalizacion. Se le pasa una columna de datos y los normaliza
+'''      
+def normalize(list):
+    maxValue = max(list)
+    minValue = min(list)
+    for i in range(len(list)):
+        list[i] = (list[i]-minValue)/(maxValue-minValue)
+    return list
+'''
