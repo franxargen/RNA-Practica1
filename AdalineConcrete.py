@@ -3,6 +3,10 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+max = []
+min = []
+
 # Writes our data in a specific file
 # fileName : The string name of the file
 # data : The data we want to write
@@ -27,6 +31,18 @@ def getData(fileName):
         dataFile.close()
     dataArray_np = np.asarray(data)
     return dataArray_np
+
+"""
+# Save max and min values from data file
+for col in range(dataArray.shape[1]):
+    max.append(max(col))
+    min.append(min(col))
+
+def denormalize(dataArray, max, min)
+    for col in range(dataArray.shape[i]):
+        list[i] = dataArray[i]*(max[i]-min[i]) + min[i]
+"""
+
 
 # Obtains data from file and applies randomation and normalization. Also, it adds a column of full 1's at the end
 # fileName : The string name of the file we want to process
@@ -78,6 +94,13 @@ def getExpectedOutput(data):
 def calculateOutput(input, wheights):
     resultArray = np.multiply(input, wheights)
     return np.sum(resultArray)
+
+def denormalize(list, max, min):
+    
+    for i in range(len(list)):
+        list[i] = (list[i]-minValue)/(maxValue-minValue)
+        (maxValue-minValue)*list[i] = (list[i]-minValue)
+    return list
 
 def run(input, weights=[], maxCycles=1000, learningRate=0.0005):
 
