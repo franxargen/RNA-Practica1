@@ -186,9 +186,11 @@ plt.legend(loc="lower right")
 plt.show()
 
 '''Preparacion de datos para MLP'''
+# We delete columns of full 1's of all data sets
 training = np.delete(training, training.shape[1] - 2, axis=1)
 validation = np.delete(validation, validation.shape[1] - 2, axis=1)
 testing = np.delete(testing, testing.shape[1] - 2, axis=1)
+# And we write them in file
 writeDataInFile("training.csv", training)
 writeDataInFile("validation.csv", validation)
 writeDataInFile("testing.csv", testing)
