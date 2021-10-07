@@ -72,10 +72,10 @@ training = processedData[:int(len(processedData)*0.7)]
 validation = processedData[int(len(processedData)*0.7):int(len(processedData)*0.85)]
 testing = processedData[int(len(processedData)*0.85):]
 
-# We write them on file to check
-writeDataInFile("training", training)
-writeDataInFile("validation", validation)
-writeDataInFile("testing", testing)
+'''Uncomment to check data in files'''
+# writeDataInFile("training.csv", training)
+# writeDataInFile("validation", validation)
+# writeDataInFile("testing", testing)
 
 # Calculates the mean 
 def calculateMeanSquareError(obtainedWeights, dataSet):
@@ -185,5 +185,11 @@ plt.ylabel('Concrete Compressive Strength (MPa)')
 plt.legend(loc="lower right")
 plt.show()
 
-print(validationErrorData.index(min(validationErrorData)))
+'''Preparacion de datos para MLP'''
+training = np.delete(training, training.shape[1] - 2, axis=1)
+validation = np.delete(validation, validation.shape[1] - 2, axis=1)
+testing = np.delete(testing, testing.shape[1] - 2, axis=1)
+writeDataInFile("training.csv", training)
+writeDataInFile("validation.csv", validation)
+writeDataInFile("testing.csv", testing)
 
