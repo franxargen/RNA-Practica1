@@ -35,8 +35,8 @@ def getData(fileName):
 def denormalize(output):
 
     #output = float(output * (maxValueOutput - minValueOutput) + minValueOutput)
-    for value in output:
-        value = value * (maxValueOutput - minValueOutput) + minValueOutput
+    for i in range(len(output)):
+        output[i] = output[i] * (maxValueOutput - minValueOutput) + minValueOutput
     #for col in range(dataArray.shape[1]):
         #dataArray[:,col] = dataArray[:,col]*(max[col]-min[col]) + min[col]
     return output
@@ -160,12 +160,13 @@ finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 #print("Validation error ", validationErrorData)
 
 # Plot settings
-plt.plot(trainingErrorData, color='red')
-plt.plot(validationErrorData, color='blue')
+plt.plot(trainingErrorData, color='red', label = 'Training error')
+plt.plot(validationErrorData, color='blue', label = 'Validation error')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
 plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
         max(max(trainingErrorData), max(validationErrorData)))
+plt.legend(loc="lower right")
 plt.show()
 
 # Final testing error
@@ -189,11 +190,12 @@ expectedOutputs_norm = getExpectedOutput(testing)
 expectedOutputs_denorm = denormalize(np.asarray(expectedOutputs_norm))
 
 # Plot settings
-plt.plot(finalObtainedOutputs_denorm, color='red')
-plt.plot(expectedOutputs_denorm, color='blue')
+plt.plot(finalObtainedOutputs_denorm, color='red', label='Obtained outputs')
+plt.plot(expectedOutputs_denorm, color='blue', label = 'Expected outputs')
 plt.xlabel('Test pattern')
 plt.ylabel('Concrete Compressive Strength (MPa)')
 #plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
 #        max(max(trainingErrorData), max(validationErrorData)))
+plt.legend(loc="lower right")
 plt.show()
 
