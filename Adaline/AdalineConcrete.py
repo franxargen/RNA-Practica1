@@ -1,6 +1,5 @@
 import csv
 import random
-from typing import final
 import numpy as np
 import matplotlib.pyplot as plt
 
