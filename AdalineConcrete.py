@@ -1,11 +1,11 @@
 import csv
 import random
+from typing import final
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-max = []
-min = []
+
 
 # Writes our data in a specific file
 # fileName : The string name of the file
@@ -32,16 +32,15 @@ def getData(fileName):
     dataArray_np = np.asarray(data)
     return dataArray_np
 
-"""
-# Save max and min values from data file
-for col in range(dataArray.shape[1]):
-    max.append(max(col))
-    min.append(min(col))
+def denormalize(output):
 
-def denormalize(dataArray, max, min)
-    for col in range(dataArray.shape[i]):
-        list[i] = dataArray[i]*(max[i]-min[i]) + min[i]
-"""
+    #output = float(output * (maxValueOutput - minValueOutput) + minValueOutput)
+    for value in output:
+        value = value * (maxValueOutput - minValueOutput) + minValueOutput
+    #for col in range(dataArray.shape[1]):
+        #dataArray[:,col] = dataArray[:,col]*(max[col]-min[col]) + min[col]
+    return output
+
 
 
 # Obtains data from file and applies randomation and normalization. Also, it adds a column of full 1's at the end
@@ -61,9 +60,24 @@ def processData(fileName):
     dataArray_np = np.insert(dataArray_np, dataArray_np.shape[1] - 1, np.ones(len(dataArray_np)), axis=1)
     return dataArray_np
 
-'''These two lines process the data. They are commented because we want to proccess the data once'''
+'''These two lines process the data and write it on file.
+They are commented because we want to proccess the data once'''
 #dataArray = processData("ConcreteData.csv")
 #writeDataInFile("processedData.csv", dataArray)
+
+rawData = getData("ConcreteData.csv")
+print(rawData)
+
+# Save max and min values from data file
+maxValueOutput = max(rawData[:,-1])
+minValueOutput = min(rawData[:,-1])
+print("Max value =",maxValueOutput)
+print("Min value =", minValueOutput)
+#for col in range(rawData.shape[1]):
+    #maxList.append(max(rawData[:,col]))
+    #minList.append(min(rawData[:,col]))
+#print("Max list =", maxList)
+#print("Min list =", minList)
 
 processedData = getData("processedData.csv")
 
@@ -95,12 +109,12 @@ def calculateOutput(input, wheights):
     resultArray = np.multiply(input, wheights)
     return np.sum(resultArray)
 
-def denormalize(list, max, min):
+#def denormalize(list, max, min):
     
-    for i in range(len(list)):
-        list[i] = (list[i]-minValue)/(maxValue-minValue)
-        (maxValue-minValue)*list[i] = (list[i]-minValue)
-    return list
+#    for i in range(len(list)):
+#        list[i] = (list[i]-minValue)/(maxValue-minValue)
+#        (maxValue-minValue)*list[i] = (list[i]-minValue)
+#    return list
 
 def run(input, weights=[], maxCycles=1000, learningRate=0.0005):
 
@@ -116,9 +130,10 @@ def run(input, weights=[], maxCycles=1000, learningRate=0.0005):
     #print("Initial Inputs : \n", input)
 
     # Cycles loop
+    print("Generating model...")
     for cycle in range(maxCycles):
 
-        print("CYCLE =>", cycle)
+        # print("CYCLE =>", cycle)
 
         # Data lines loop
         for inputLine in input:
@@ -141,8 +156,8 @@ def run(input, weights=[], maxCycles=1000, learningRate=0.0005):
 finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 #print("Final weights are : \n", finalWeightsModel)
 
-print("Training error ", trainingErrorData)
-print("Validation error ", validationErrorData)
+#print("Training error ", trainingErrorData)
+#print("Validation error ", validationErrorData)
 
 # Plot settings
 plt.plot(trainingErrorData, color='red')
@@ -156,3 +171,29 @@ plt.show()
 # Final testing error
 testingError = calculateMeanSquareError(finalWeightsModel, testing)
 print("Testing error = ", testingError)
+
+''' Now, we have to de-normalize the testing data in order to generate our outputs
+with the final model generated '''
+
+# Get final obtained outputs
+finalObtainedOutputs_norm = []
+for line in testing:
+    finalObtainedOutputs_norm.append(calculateOutput(line[:-1],finalWeightsModel))
+print("OBTAINED OUTPUTS=", finalObtainedOutputs_norm)
+finalObtainedOutputs_denorm = denormalize(np.asarray(finalObtainedOutputs_norm))
+
+
+
+# Get the expected outputs
+expectedOutputs_norm = getExpectedOutput(testing)
+expectedOutputs_denorm = denormalize(np.asarray(expectedOutputs_norm))
+
+# Plot settings
+plt.plot(finalObtainedOutputs_denorm, color='red')
+plt.plot(expectedOutputs_denorm, color='blue')
+plt.xlabel('Test pattern')
+plt.ylabel('Concrete Compressive Strength (MPa)')
+#plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
+#        max(max(trainingErrorData), max(validationErrorData)))
+plt.show()
+
