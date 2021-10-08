@@ -58,13 +58,15 @@ They are commented because we want to proccess the data once '''
 #dataArray = processData("ConcreteData.csv")
 #writeDataInFile("processedData.csv", dataArray)
 
+# We obtain the raw data from file and print it for checking
 rawData = getData("./Adaline/ConcreteData.csv")
 print(rawData)
 
-# Save max and min values from data file
+# Save max and min values from data file. This will be useful to de-normalization
 maxValueOutput = max(rawData[:,-1])
 minValueOutput = min(rawData[:,-1])
 
+# We obtain the processed data (randomized and normalized)
 processedData = getData("./Adaline/processedData.csv")
 
 # Split of the data
@@ -74,8 +76,8 @@ testing = processedData[int(len(processedData)*0.85):]
 
 '''Uncomment to check data in files'''
 # writeDataInFile("training.csv", training)
-# writeDataInFile("validation", validation)
-# writeDataInFile("testing", testing)
+# writeDataInFile("validation.csv", validation)
+# writeDataInFile("testing.csv", testing)
 
 # Calculates the mean 
 def calculateMeanSquareError(obtainedWeights, dataSet):
@@ -88,20 +90,16 @@ def calculateMeanSquareError(obtainedWeights, dataSet):
     result = result / len(dataSet)
     return result
 
+# This function obtains the output column of the file
 def getExpectedOutput(data):
     return np.array(data[:, -1])
 
+# This caculates the linear combination to obtain outputs
 def calculateOutput(input, wheights):
     resultArray = np.multiply(input, wheights)
     return np.sum(resultArray)
 
-#def denormalize(list, max, min):
-    
-#    for i in range(len(list)):
-#        list[i] = (list[i]-minValue)/(maxValue-minValue)
-#        (maxValue-minValue)*list[i] = (list[i]-minValue)
-#    return list
-
+''' ADALINE ALGORITHM '''
 def run(input, weights=[], maxCycles=1000, learningRate=0.005):
 
     trainingErrorData = []
@@ -138,6 +136,7 @@ def run(input, weights=[], maxCycles=1000, learningRate=0.005):
 
     return weights, trainingErrorData, validationErrorData
 
+# We call to the algorithm and obtain the model and the errors
 finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 
 '''Uncomment to see final results'''
@@ -150,8 +149,11 @@ plt.plot(trainingErrorData, color='red', label = 'Training error')
 plt.plot(validationErrorData, color='blue', label = 'Validation error')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
+
+# This line adjust the plot's scale
 plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
         max(max(trainingErrorData), max(validationErrorData)))
+
 plt.legend(loc="lower right")
 plt.show()
 
@@ -180,12 +182,10 @@ plt.plot(finalObtainedOutputs_denorm, color='red', label='Obtained outputs')
 plt.plot(expectedOutputs_denorm, color='blue', label = 'Expected outputs')
 plt.xlabel('Test pattern')
 plt.ylabel('Concrete Compressive Strength (MPa)')
-#plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
-#        max(max(trainingErrorData), max(validationErrorData)))
 plt.legend(loc="lower right")
 plt.show()
 
-'''Preparacion de datos para MLP'''
+'''Data for MLP'''
 # We delete columns of full 1's of all data sets
 training = np.delete(training, training.shape[1] - 2, axis=1)
 validation = np.delete(validation, validation.shape[1] - 2, axis=1)
