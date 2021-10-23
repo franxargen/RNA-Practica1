@@ -32,8 +32,6 @@ def getData(fileName):
 def denormalizeOutput(output):
     for i in range(len(output)):
         output[i] = output[i] * (maxValueOutput - minValueOutput) + minValueOutput
-    #for col in range(dataArray.shape[1]):
-        #dataArray[:,col] = dataArray[:,col]*(max[col]-min[col]) + min[col]
     return output
 
 # Obtains data from file and applies randomation and normalization. Also, it adds a column of full 1's at the end
@@ -41,8 +39,8 @@ def denormalizeOutput(output):
 def processData(fileName):
 
     dataArray = getData(fileName)
-
     print("Processing data...")
+
     # Normalize
     dataArray_np = (dataArray - dataArray.min(0)) / dataArray.ptp(0)
 
@@ -60,7 +58,6 @@ They are commented because we want to proccess the data once '''
 
 # We obtain the raw data from file and print it for checking
 rawData = getData("./Adaline/ConcreteData.csv")
-print(rawData)
 
 # Save max and min values from data file. This will be useful to de-normalization
 maxValueOutput = max(rawData[:,-1])
@@ -100,12 +97,12 @@ def calculateOutput(input, wheights):
     return np.sum(resultArray)
 
 ''' ADALINE ALGORITHM '''
-def run(input, weights=[], maxCycles=1000, learningRate=0.005):
+def run(input, weights=[], maxCycles=30000, learningRate=0.0001):
 
     trainingErrorData = []
     validationErrorData = []
 
-    # Initialization of randow weights and umbral
+    # Initialization of random weights and umbral
     if len(weights) == 0:
         weights = np.random.rand(input.shape[1] - 1) - 0.5
 
@@ -144,16 +141,18 @@ finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 #print("Training error ", trainingErrorData)
 #print("Validation error ", validationErrorData)
 
+# Calculation of the new optimal cycles
+newCycles = validationErrorData.index(min(validationErrorData))
+print("New optimal cycles =", newCycles)
+
 # Plot settings for error
 plt.plot(trainingErrorData, color='red', label = 'Training error')
 plt.plot(validationErrorData, color='blue', label = 'Validation error')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
-
 # This line adjust the plot's scale
 plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
         max(max(trainingErrorData), max(validationErrorData)))
-
 plt.legend(loc="lower right")
 plt.show()
 
@@ -168,22 +167,26 @@ Once we have our outputs, we have to de-normalize them'''
 finalObtainedOutputs_norm = []
 for line in testing:
     finalObtainedOutputs_norm.append(calculateOutput(line[:-1],finalWeightsModel))
-print("OBTAINED OUTPUTS=", finalObtainedOutputs_norm)
+#print("OBTAINED OUTPUTS=", finalObtainedOutputs_norm)
 
-# De-normalize the outputs
+# De-normalize the outputs and sorting
 finalObtainedOutputs_denorm = denormalizeOutput(np.asarray(finalObtainedOutputs_norm))
 
-# Get the expected outputs
+# Get the expected outputs and sorting
 expectedOutputs_norm = getExpectedOutput(testing)
 expectedOutputs_denorm = denormalizeOutput(np.asarray(expectedOutputs_norm))
 
+comparisonErrors = np.vstack((finalObtainedOutputs_denorm, expectedOutputs_denorm)).T
+comparisonErrors = comparisonErrors[comparisonErrors[:,1].argsort()]
+
 # Plot settings for testing
-plt.plot(finalObtainedOutputs_denorm, color='red', label='Obtained outputs')
-plt.plot(expectedOutputs_denorm, color='blue', label = 'Expected outputs')
+plt.plot(comparisonErrors[:,0], color='red', label='Obtained outputs')
+plt.plot(comparisonErrors[:,1], color='blue', label = 'Expected outputs')
 plt.xlabel('Test pattern')
 plt.ylabel('Concrete Compressive Strength (MPa)')
 plt.legend(loc="lower right")
 plt.show()
+
 
 '''Data for MLP'''
 # We delete columns of full 1's of all data sets
@@ -191,7 +194,7 @@ training = np.delete(training, training.shape[1] - 2, axis=1)
 validation = np.delete(validation, validation.shape[1] - 2, axis=1)
 testing = np.delete(testing, testing.shape[1] - 2, axis=1)
 # And we write them in file
-writeDataInFile("training.csv", training)
-writeDataInFile("validation.csv", validation)
-writeDataInFile("testing.csv", testing)
+#writeDataInFile("training.csv", training)
+#writeDataInFile("validation.csv", validation)
+#writeDataInFile("testing.csv", testing)
 
