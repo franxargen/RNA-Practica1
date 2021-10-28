@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 # fileName : The string name of the file
 # data : The data we want to write
 def writeDataInFile(fileName, data):
-
     with open('./Adaline/' + fileName, 'w') as file:
         for line in data:
             writer = csv.writer(file)
@@ -72,9 +71,9 @@ validation = processedData[int(len(processedData)*0.7):int(len(processedData)*0.
 testing = processedData[int(len(processedData)*0.85):]
 
 '''Uncomment to check data in files'''
-# writeDataInFile("training.csv", training)
-# writeDataInFile("validation.csv", validation)
-# writeDataInFile("testing.csv", testing)
+writeDataInFile("training.csv", training)
+writeDataInFile("validation.csv", validation)
+writeDataInFile("testing.csv", testing)
 
 # Calculates the mean 
 def calculateMeanSquareError(obtainedWeights, dataSet):
@@ -97,7 +96,7 @@ def calculateOutput(input, wheights):
     return np.sum(resultArray)
 
 ''' ADALINE ALGORITHM '''
-def run(input, weights=[], maxCycles=30000, learningRate=0.0001):
+def run(input=[], weights=[], maxCycles=1000, learningRate=0.005):
 
     trainingErrorData = []
     validationErrorData = []
@@ -113,8 +112,6 @@ def run(input, weights=[], maxCycles=30000, learningRate=0.0001):
     # Cycles loop
     print("Generating model...")
     for cycle in range(maxCycles):
-
-        # print("CYCLE =>", cycle)
 
         # Data lines loop
         for inputLine in input:
@@ -133,8 +130,12 @@ def run(input, weights=[], maxCycles=30000, learningRate=0.0001):
 
     return weights, trainingErrorData, validationErrorData
 
-# We call to the algorithm and obtain the model and the errors
-finalWeightsModel, trainingErrorData, validationErrorData = run(training)
+# We initialize the random weights
+weights = np.random.rand(training.shape[1] - 1) - 0.5
+maxCycles = 10000
+learningRate = 0.05
+# We call the algorithm and obtain the model and the errors
+finalWeightsModel, trainingErrorData, validationErrorData = run(training, weights=weights, maxCycles=maxCycles, learningRate=learningRate)
 
 '''Uncomment to see final results'''
 #print("Final weights are : \n", finalWeightsModel)
@@ -142,8 +143,14 @@ finalWeightsModel, trainingErrorData, validationErrorData = run(training)
 #print("Validation error ", validationErrorData)
 
 # Calculation of the new optimal cycles
-newCycles = validationErrorData.index(min(validationErrorData))
+newCycles = validationErrorData.index(min(validationErrorData)) + 1
 print("New optimal cycles =", newCycles)
+
+# We call the algorithm and obtain the results with the new cycles
+finalWeightsModel, trainingErrorData, validationErrorData = run(training, weights=weights, maxCycles=newCycles, learningRate=learningRate)
+
+with open('finalWeightsModel.csv', 'w') as file:
+    np.savetxt(file, finalWeightsModel)
 
 # Plot settings for error
 plt.plot(trainingErrorData, color='red', label = 'Training error')
@@ -179,6 +186,9 @@ expectedOutputs_denorm = denormalizeOutput(np.asarray(expectedOutputs_norm))
 comparisonErrors = np.vstack((finalObtainedOutputs_denorm, expectedOutputs_denorm)).T
 comparisonErrors = comparisonErrors[comparisonErrors[:,1].argsort()]
 
+with open('obtainedExpectedOutputs.csv', 'w') as file:
+    np.savetxt(file, comparisonErrors)
+
 # Plot settings for testing
 plt.plot(comparisonErrors[:,0], color='red', label='Obtained outputs')
 plt.plot(comparisonErrors[:,1], color='blue', label = 'Expected outputs')
@@ -186,7 +196,6 @@ plt.xlabel('Test pattern')
 plt.ylabel('Concrete Compressive Strength (MPa)')
 plt.legend(loc="lower right")
 plt.show()
-
 
 '''Data for MLP'''
 # We delete columns of full 1's of all data sets
