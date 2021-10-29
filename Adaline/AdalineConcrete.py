@@ -57,7 +57,6 @@ They are commented because we want to proccess the data once '''
 
 # We obtain the raw data from file and print it for checking
 rawData = getData("./Adaline/ConcreteData.csv")
-
 # Save max and min values from data file. This will be useful to de-normalization
 maxValueOutput = max(rawData[:,-1])
 minValueOutput = min(rawData[:,-1])
@@ -132,8 +131,8 @@ def run(input=[], weights=[], maxCycles=1000, learningRate=0.005):
 
 # We initialize the random weights
 weights = np.random.rand(training.shape[1] - 1) - 0.5
-maxCycles = 10000
-learningRate = 0.05
+maxCycles = 30000
+learningRate = 0.00005
 # We call the algorithm and obtain the model and the errors
 finalWeightsModel, trainingErrorData, validationErrorData = run(training, weights=weights, maxCycles=maxCycles, learningRate=learningRate)
 
@@ -146,18 +145,19 @@ finalWeightsModel, trainingErrorData, validationErrorData = run(training, weight
 newCycles = validationErrorData.index(min(validationErrorData)) + 1
 print("New optimal cycles =", newCycles)
 
-# We call the algorithm and obtain the results with the new cycles
+# We call the algorithm again and obtain the results with the new cycles
 finalWeightsModel, trainingErrorData, validationErrorData = run(training, weights=weights, maxCycles=newCycles, learningRate=learningRate)
 
+# We write the final model in file
 with open('finalWeightsModel.csv', 'w') as file:
     np.savetxt(file, finalWeightsModel)
 
-# Plot settings for error
+# Plot settings for error data
 plt.plot(trainingErrorData, color='red', label = 'Training error')
 plt.plot(validationErrorData, color='blue', label = 'Validation error')
 plt.xlabel('Cycles')
 plt.ylabel('Mean Square Error')
-# This line adjust the plot's scale
+# This line adjusts the plot's scale
 plt.ylim(min(min(trainingErrorData), min(validationErrorData)),
         max(max(trainingErrorData), max(validationErrorData)))
 plt.legend(loc="lower right")
@@ -183,9 +183,11 @@ finalObtainedOutputs_denorm = denormalizeOutput(np.asarray(finalObtainedOutputs_
 expectedOutputs_norm = getExpectedOutput(testing)
 expectedOutputs_denorm = denormalizeOutput(np.asarray(expectedOutputs_norm))
 
+# Obtain an array with the outputs obtained and expected in order to compare them
 comparisonErrors = np.vstack((finalObtainedOutputs_denorm, expectedOutputs_denorm)).T
 comparisonErrors = comparisonErrors[comparisonErrors[:,1].argsort()]
 
+# Write the comparison in file
 with open('obtainedExpectedOutputs.csv', 'w') as file:
     np.savetxt(file, comparisonErrors)
 
@@ -197,11 +199,11 @@ plt.ylabel('Concrete Compressive Strength (MPa)')
 plt.legend(loc="lower right")
 plt.show()
 
-'''Data for MLP'''
+'''Data process for MLP'''
 # We delete columns of full 1's of all data sets
-training = np.delete(training, training.shape[1] - 2, axis=1)
-validation = np.delete(validation, validation.shape[1] - 2, axis=1)
-testing = np.delete(testing, testing.shape[1] - 2, axis=1)
+#training = np.delete(training, training.shape[1] - 2, axis=1)
+#validation = np.delete(validation, validation.shape[1] - 2, axis=1)
+#testing = np.delete(testing, testing.shape[1] - 2, axis=1)
 # And we write them in file
 #writeDataInFile("training.csv", training)
 #writeDataInFile("validation.csv", validation)
